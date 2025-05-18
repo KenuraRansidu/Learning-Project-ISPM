@@ -66,7 +66,8 @@ const getCertificateFormData = async (req, res) => {
         end_date,
         submission_date,
         progress,
-        certificate_issued
+        certificate_issued,
+        status
       } = req.body;
 
       const newRequest = new CertificateRequest({
@@ -77,7 +78,8 @@ const getCertificateFormData = async (req, res) => {
         end_date,
         submission_date,
         progress: mongoose.Types.Decimal128.fromString(progress.toString()),
-        certificate_issued
+        certificate_issued,
+        status: pending
       });
 
       await newRequest.save();

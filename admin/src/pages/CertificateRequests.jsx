@@ -22,6 +22,20 @@ const CertificateRequests = () => {
     }
   };
 
+  const handleDelete = async (requestId) => {
+  const confirmDelete = window.confirm("Are you sure you want to delete this request?");
+  if (!confirmDelete) return;
+
+  try {
+    await axios.delete(`${backendUrl}/api/educator/certificate-request/${requestId}`);
+    toast.success("Request deleted");
+    setRequests(prev => prev.filter(req => req._id !== requestId));
+  } catch (error) {
+    toast.error("Failed to delete request");
+  }
+};
+
+
   const handleAction = async (requestId, action) => {
   const confirmMessage =
     action === "approve"
@@ -120,6 +134,13 @@ const CertificateRequests = () => {
                   >
                     Decline
                   </button>
+                  <button
+                  onClick={() => handleDelete(req._id)}
+                  className="px-3 py-1 text-white bg-gray-600 hover:bg-gray-700 rounded"
+                  >
+                  Delete
+                  </button>
+
                 </td>
               </tr>
             ))}

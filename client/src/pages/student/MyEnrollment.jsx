@@ -68,31 +68,33 @@ const MyEnrollment = () => {
   }
 };
 
+ const fetchCertificateStatuses = async () => {
+  try {
+    const statuses = await Promise.all(
+      enrolledCourses.map(async (course) => {
+        try {
+          const res = await axios.get(`${backendUrl}/api/certificate_request`, {
+            params: {
+              user_id: userData._id,
+              course_id: course._id,
+            },
+          });
 
+          const status = res.data?.status;
+          if (status === "approved") return "Issued";
+          if (status === "rejected") return "Rejected";
+          return "Pending";
+        } catch (err) {
+          return "Not Requested";
+        }
+      })
+    );
+    setCertificateStatus(statuses);
+  } catch (err) {
+    console.error("Failed to fetch certificate statuses", err);
+  }
+};
 
-  const fetchCertificateStatuses = async () => {
-    try {
-      const statuses = await Promise.all(
-        enrolledCourses.map(async (course) => {
-          try {
-            const res = await axios.get(`${backendUrl}/api/certificate_request`, {
-              params: {
-                user_id: userData._id,
-                course_id: course._id,
-              },
-            });
-
-            return res.data?.certificate_issued ? "Issued" : "Not Issued";
-          } catch (err) {
-            return "Not Requested";
-          }
-        })
-      );
-      setCertificateStatus(statuses);
-    } catch (err) {
-      console.error("Failed to fetch certificate statuses", err);
-    }
-  };
 
   const calculateDaysLeft = (enrollmentDate, courseDuration) => {
     const enrollment = new Date(enrollmentDate);
@@ -221,9 +223,17 @@ const MyEnrollment = () => {
                 </td>
                 <td className="px-4 py-3">
                   <div className="mb-1">
-                    <span className={`text-sm font-medium ${certificateStatus[index] === "Issued" ? "text-green-600" : "text-gray-500"}`}>
-                      {certificateStatus[index] || "Loading..."}
-                    </span>
+                    <span className={`text-sm font-medium ${
+                      certificateStatus[index] === "Issued"
+                      ? "text-green-600"
+                      : certificateStatus[index] === "Rejected"
+                      ? "text-red-600"
+                      : certificateStatus[index] === "Pending"
+                      ? "text-yellow-600"
+                      : "text-gray-500"}`}>
+                        {certificateStatus[index] || "Loading..."}
+                        </span>
+
                   </div>
                   {certificateStatus[index] === "Issued" ? (
                     <button

@@ -51,6 +51,23 @@ educatorRouter.post('/decline-certificate', async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
+
+educatorRouter.delete('/certificate-request/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedRequest = await CertificateRequest.findByIdAndDelete(id);
+
+    if (!deletedRequest) {
+      return res.status(404).json({ message: "Certificate request not found" });
+    }
+
+    res.status(200).json({ message: "Certificate request deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting certificate request:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 // here
 
 export default educatorRouter;

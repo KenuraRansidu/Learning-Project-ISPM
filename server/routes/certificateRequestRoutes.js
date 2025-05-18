@@ -45,8 +45,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-
-// ✅ Already existing: POST request
 router.post('/', async (req, res) => {
   try {
     const {
@@ -104,7 +102,6 @@ router.get("/download", async (req, res) => {
   const { userId, courseId } = req.query;
 
   try {
-    // ✅ 1. Fetch certificate request data
     const request = await CertificateRequest.findOne({ user_id: userId, course_id: courseId });
     if (!request) {
       return res.status(404).send("Certificate request not found");
@@ -114,37 +111,23 @@ router.get("/download", async (req, res) => {
     const courseName = course?.courseTitle || "Unknown Course";
     const userName = request.student_name || "Student";
     const date = new Date().toLocaleDateString();
-
-    // ✅ 2. Load the certificate template image
     const certTemplatePath = path.resolve("assets/CompletionCertificate.png");
-
     const image = await loadImage(certTemplatePath);
-
-    // ✅ 3. Create canvas and draw image
     const canvas = createCanvas(image.width, image.height);
     const ctx = canvas.getContext("2d");
 
-    // Set up drawing context
-ctx.drawImage(image, 0, 0, image.width, image.height);
-ctx.fillStyle = "#222"; // Softer black
-ctx.textAlign = "center";
+    ctx.drawImage(image, 0, 0, image.width, image.height);
+    ctx.fillStyle = "#222"; 
+    ctx.textAlign = "center";
+    ctx.font = "bold 60px serif";
+    ctx.fillText(userName, 1000, 720); 
+    ctx.textAlign = "left";
+    ctx.font = "bold 48px serif";
+    ctx.fillText(courseName, 430, 960); 
 
-// 👤 Student Name (centered over the long line under “presented to”)
-ctx.font = "bold 60px serif";
-ctx.fillText(userName, 1000, 720); // x=center, y=well-aligned to the blank line
+    ctx.textAlign = "right";
+    ctx.fillText(date, 1770, 960);
 
-// 📘 Course Name (aligned with line next to "Course name:")
-ctx.textAlign = "left";
-ctx.font = "bold 48px serif";
-ctx.fillText(courseName, 430, 960); // adjust left side
-
-// 📅 Date (aligned with line next to "Date:")
-ctx.textAlign = "right";
-ctx.fillText(date, 1770, 960); // adjust right side
-
-
-
-    // ✅ 5. Send response as PNG
     const buffer = canvas.toBuffer("image/png");
 
     res.set({
@@ -154,7 +137,7 @@ ctx.fillText(date, 1770, 960); // adjust right side
 
     res.send(buffer);
   } catch (err) {
-    console.error("❌ Certificate generation failed:", err);
+    console.error("Certificate generation failed:", err);
     res.status(500).send("Certificate generation failed");
   }
 });
